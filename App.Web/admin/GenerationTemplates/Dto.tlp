@@ -1,0 +1,11 @@
+﻿namespace App.Core.Dtos
+{
+    public partial class ${model.ModelName}Dto#if($model.UISaveType == "inline") : BulkEntityDto#end
+    {
+        #foreach($row in $dtoFields)
+		#if($row.Name == $FieldExise)[Required]
+		#end
+		public $row.PropertyType $row.Name { get; set; }
+		#end
+    }
+}

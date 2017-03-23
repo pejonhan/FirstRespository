@@ -1,0 +1,74 @@
+/* Add here all your css styles (customizations) */
+/*Shop Badge
+------------------------------------*/
+/*Badge Lists*/
+.header-v5 .shop-badge {
+  position: relative;
+  margin-left: 20px;
+  padding: 10px 15px 5px 5px;
+}
+.header-fixed .header-v5.header-fixed-shrink .shop-badge {
+	padding-top: 30px;
+}
+
+.header-v5 .shop-badge span.badge {
+    top: 20px;
+    right: 3px;
+    position: absolute;
+}
+.header-fixed .header-v5.header-fixed-shrink .shop-badge span.badge {
+	top: 22px;
+}
+
+/*Badge Icons*/
+.header-v5 .shop-badge.badge-icons span.badge {
+    min-width: 12px;
+    padding: 3px 6px;
+}
+
+.header-v5 .shop-badge.badge-icons i {
+    color: #687074 !important;
+    font-size: 24px;
+    min-width: 25px;
+}
+
+/*Badge*/
+.header-v5 .shop-badge span.badge {
+    font-weight: 400;
+    padding: 4px 7px;
+}
+
+.header-v5 .shop-badge span.badge-sea {
+    background: #18ba9b;
+}
+
+/*Navbar Header*/
+@media (max-width: 991px) {
+    .header-v5 .navbar-header {
+      margin-bottom: 7px;
+      margin-right: 50px;
+    }
+    .header-v5 .shop-badge {
+    	position: absolute;
+    	top: 0;
+    	right: 20px;
+    	padding: 14px 10px 18px 0;
+    }
+    .header-v5 .shop-badge span.badge {
+    	top: 5px;
+    	right: 0;
+    }
+    .header-v5 .badge-open {
+    	top: 57px;
+    }
+}
+
+form .invalid {
+    color:#ff0000;
+}
+
+.wizard > .actions .disabled a, .wizard > .actions .disabled a:hover, .wizard > .actions .disabled a:active {
+    color: #333;
+    background: #fff;
+    border:1px #ccc solid;
+}

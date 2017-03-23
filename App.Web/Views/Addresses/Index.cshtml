@@ -1,0 +1,77 @@
+﻿@model List<App.Core.Domain.Address>
+
+@{
+    ViewBag.Title = "收货地址";
+    ViewBag.TheNav = ViewBag.Title;
+}
+
+<div class="content-md margin-bottom-30">
+    <div class="container">
+        <div class="margin-bottom-10 text-right">
+            @Html.ActionLink("添加", "Create", null,  new { @class = "btn btn-primary btn-sm" } )
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">常用收货地址管理</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>收货人</th>
+                            <th>联系电话</th>
+                            <th>性别</th>
+                            <th>省份</th>
+                            <th>城市</th>
+                            <th>区/县</th>
+                            <th>详细地址</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <th scope="row">@(Model.IndexOf(item) + 1)</th>
+                                <td>
+                                    @item.Consignee
+                                </td>
+                                <td>@item.ConsigneePhone</td>
+                                <td>@item.ConsigneeSex</td>
+                                <td>@item.ConsigneeProvince</td>
+                                <td>@item.ConsigneeCity</td>
+                                <td>@item.ConsigneeDistrict</td>
+                                <td>@item.ConsigneeAddress</td>
+                                <td>
+                                    @Html.ActionLink("修改", "Edit", new { id = item.Id }) |
+                                    <a href="javascript:deleteAddress('@item.Id');">删除</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        @if (Model.Count() == 0)
+        {
+            <p class="text-center">您还没有添加常用收货地址！</p>
+        }
+    </div>
+</div>
+@section Scripts{ 
+<script type="text/javascript">
+    function deleteAddress(id) {
+        swal({
+            title: "确定删除吗？",
+            text: "",
+            type: 'warning',
+            showCancelButton: true
+        }, function () {
+            $.post('/addresses/Delete/'+id,null, function (data) {
+                window.location.reload();
+            });
+        });
+    }
+    </script>    
+}

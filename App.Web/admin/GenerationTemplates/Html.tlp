@@ -1,0 +1,74 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+</head>
+<body>
+    <div class="easyui-layout animated fadeInRight" data-options="fit:true">
+        <div data-options="region:'center',border:false">
+            <table id="dg-${model.ModelName}s"></table>
+        </div>
+    </div>$model.UISaveType
+	#if($model.UISaveType == "dialog")
+	<div id="dlg-${model.ModelName}" style="width:520px;padding:5px;">
+        <form class="easyui-form" data-options="novalidate:true">
+            <table cellpadding="5">
+				#foreach($row in $dtoFields)
+                <tr>
+                    <td>$row.Name:</td>
+                    <td colspan="3"><input class="easyui-textbox" type="text" name="$row.Name" data-options="required:true" /></td>
+                </tr>
+				#end
+            </table>
+        </form>
+    </div>
+	<script type="text/javascript">
+        $(function () {
+            var
+                dg = $('#dg-${model.ModelName}s'),
+                dlg = $('#dlg-${model.ModelName}');
+
+            dg.dialogDataGrid({
+                url: '/api/${model.ModelName}s',
+                dialogTitle: '${model.ModelDescription}',
+                dialogEl: dlg,
+                deleteField: '${model.ExistField}',
+                columns: [jQuery.merge([
+                    { field: 'ck', checkbox: true },
+                    { field: 'id', hidden: true },
+                    #foreach($row in $dtoFields)
+					{ field: '$row.Name', title: '$row.Name', width: 220, sortable: true },
+                    #end
+                ], globalColumns)],
+                columnFilters: globalColumnsFilter,
+                dialogBeforeOpen: function(form, record) {
+                    if (record) {
+                        form.form('load', record);
+                    }
+                    else {
+                        form.form('reset');
+                    }
+                }
+            });
+        });
+    </script>
+	#end
+	#if($model.UISaveType == "inline")
+    <script type="text/javascript">
+        $(function() {
+            $('#dg-${model.ModelName}s').inlineGrid({
+                url: '/api/${model.ModelName}s',
+                columns:[jQuery.merge([
+                    { field: 'ck', checkbox: true }
+					, { field: 'Id', hidden: true }
+					#foreach($row in $dtoFields)
+                    , { field: '$row.Name', title: '$row.Name', width: 200, editor: { type: 'textbox', options: { required: true } }, sortable: true }
+					#end
+                ], globalColumns)],
+                columnFilters: globalColumnsFilter
+            });
+        });
+    </script>
+	#end
+</body>
+</html>

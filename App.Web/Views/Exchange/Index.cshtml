@@ -1,0 +1,206 @@
+﻿@model App.Core.Dtos.AddressDto
+@using App.Core.Common
+@{
+    ViewBag.Title = "兑换商品";
+    ViewBag.TheNav = "我要兑换";
+}
+    <!--=== Content Medium Part ===-->
+    <div class="content-md margin-bottom-30">
+        <div class="container">
+            <form id="ExchangeForm" class="shopping-cart" action="/Goods/SaveOrder" method="post">
+                <div>
+                    @if (string.IsNullOrEmpty(ViewBag.Mobile))
+                    {
+                        <div class="header-tags">
+                            <div class="overflow-h">
+                                <h2>验证手机号</h2>
+                                <i class="rounded-x fa fa-check"></i>
+                            </div>
+                        </div>
+                        <section>
+                            <div class="coupon-code">
+                                <div class="row">
+                                    <div class="col-sm-6 sm-margin-bottom-30">
+                                        <h3>手机号</h3>
+                                        <input class="form-control margin-bottom-10 required" name="Mobile" type="tel" v-model="mobile" placeholder="请输入您的手机号" maxlength="11">
+                                    </div>
+                                    <div class="col-sm-6 sm-margin-bottom-30">
+                                        <h3>验证码</h3>
+                                        <input class="form-control margin-bottom-10 required" name="MobileCode" type="text" placeholder="输入您收到的验证码" maxlength="4" style="width:50%;">
+                                        <button id="btnSendMobileCode" v-on:click="getMobileCode()" type="button" class="btn-u btn-u-sea-shop">点击获取</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    }else{
+                        <input type="hidden" name="Mobile" v-model="mobile" />
+                    }
+                    <div class="header-tags">
+                        <div class="overflow-h">
+                            <h2>验证兑换码</h2>
+                            <i class="rounded-x fa fa-credit-card"></i>
+                        </div>
+                    </div>
+                    <section>
+                        <div class="coupon-code">
+                            <div class="container sm-margin-bottom-30">
+                                <h3>兑换码</h3>
+                                <input class="form-control margin-bottom-10 required" name="RedeemCode" type="text" placeholder="输入您的兑换码" style="width:70%;">
+                            </div>
+                        </div>
+                    </section>
+                    <div class="header-tags">
+                        <div class="overflow-h">
+                            <h2>查看套餐信息</h2>
+                            <i class="rounded-x fa fa-info-circle"></i>
+                        </div>
+                    </div>
+                    <section>
+                        <div class="coupon-code">
+                            <div class="container sm-margin-bottom-30" id="package-infomation"></div>
+                        </div>
+                    </section>
+                    <div class="header-tags">
+                        <div class="overflow-h">
+                            <h2>填写收货信息</h2>
+                            <i class="rounded-x fa fa-home"></i>
+                        </div>
+                    </div>
+                    <section class="billing-info">
+                        <h3 class="title-type">收货信息</h3>
+                        
+                            <div class="billing-info-inputs checkbox-list">
+                                <div class="row" v-if="address.length > 0">
+                                    <div class="col-sm-12">
+                                        <select class="form-control" v-on:change="changeHistoryAddress">
+                                            <option value="">—— 选择历史收货人 ——</option>
+                                            <option v-for="(index,item) in address" value="{{index}}">{{item.Consignee}}/{{item.ConsigneePhone}}/{{item.ConsigneeProvince}}{{item.ConsigneeCity}}{{item.ConsigneeDistrict}}/{{item.ConsigneeAddress}}</option>
+                                        </select>
+                                        <hr />
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-sm-4">
+                                        <input type="text" placeholder="收件人" name="Consignee" class="form-control required" maxlength="10" tabindex="1" v-model="consignee.Consignee">
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <div class="form-group">
+                                            <select name="ConsigneeSex" class="form-control required" tabindex="2" v-model="consignee.ConsigneeSex">
+                                                <option value="">—— 请选择 ——</option>
+                                                <option>先生</option>
+                                                <option>女士</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <input type="tel" placeholder="电话" name="ConsigneePhone" v-model="consignee.ConsigneePhone" class="form-control required" maxlength="15" tabindex="3">
+                                    </div>
+                                </div>
+                                <div class="row" id="distpicker" style="padding-bottom:10px;">
+                                    <div class="col-sm-4">
+                                        <select name="ConsigneeProvince" class="form-control required" data-province="广东省"></select>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <select name="ConsigneeCity" class="form-control required" v-model="consignee.ConsigneeCity"></select>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <select name="ConsigneeDistrict" class="form-control required" v-model="consignee.ConsigneeDistrict"></select>
+                                    </div>
+                                </div>
+                                <input type="text" placeholder="详细地址" name="ConsigneeAddress" v-model="consignee.ConsigneeAddress" class="form-control required" min="3" maxlength="50">
+                            </div>
+</section>
+                </div>
+            </form>
+        </div><!--/end container-->
+    </div>
+    <!--=== End Content Medium Part ===-->
+
+@section Styles {
+<link rel="stylesheet" href="~/assets/plugins/jquery-steps/css/custom-jquery.steps.css">
+}
+
+@section Scripts{
+<script src="~/libs/distpicker/distpicker.data.js"></script>
+<script src="~/libs/distpicker/distpicker.js"></script>
+<script src="~/assets/plugins/jquery-steps/build/jquery.steps.js"></script>
+<script src="~/assets/plugins/sky-forms-pro/skyforms/js/jquery.validate.min.js"></script>
+<script src="~/assets/js/shop.app.js"></script>
+<script src="~/assets/js/plugins/stepWizard.js"></script>
+<script>
+    var consignee = @(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model)));
+    var address = @(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Address)));
+    var mobile = '@(ViewBag.Mobile)';
+    jQuery(document).ready(function () {
+        StepWizard.initStepWizard('@AppSession.IsLogin');
+        $('#distpicker').distpicker({
+            city: "@Model.ConsigneeCity"
+        });
+
+        var vm = new Vue({
+            el: '#ExchangeForm',
+            data: {
+                mobile: mobile,
+                consignee:consignee,
+                address:address
+            },
+            methods: {
+                changeHistoryAddress:function(e){
+                    var address = vm.address[e.target.value];
+                    $('#distpicker').distpicker('destroy');
+                    $('#distpicker').distpicker({
+                        province: address.ConsigneeProvince,
+                        city: address.ConsigneeCity,
+                        district: address.ConsigneeDistrict
+                    });
+
+                    vm.consignee = address;
+                },
+                getMobileCode: function () {
+                    var btn = $('#btnSendMobileCode');
+                    if (!checkMobile(vm.mobile)) {
+                        sweetAlert("手机号格式错误!", "", "error");
+                        return;
+                    }
+
+                    btn.prop('disabled', true);
+                    $.post('/common/SendMobileCode', { mobile: vm.mobile }, function (data) {
+                        if (data.success) {
+                            if (vm.consignee.ConsigneePhone == null){
+                                vm.consignee.ConsigneePhone = vm.mobile;
+                            }
+
+                            sweetAlert("验证码已经发送到您的手机!", "", "success");
+                            var i = 60;
+                            var s = setInterval(function () {
+                                btn.text(i + '秒后重新发送');
+                                i--;
+                                if (i == 0) {
+                                    clearInterval(s);
+                                    btn.text('点击获取').prop('disabled', false)
+                                }
+                            }, 1000);
+                        }
+                        else {
+                            sweetAlert(data.message, "", "error");
+                        }
+                    });
+                }
+            }
+        });
+    });
+</script>    
+    @if (Utils.IsPhone()) {
+        <script type="text/javascript">
+            $(function(){
+                $('.steps').hide();
+                $('.steps').next().css({
+                    paddingTop:0,
+                    marginTop:0,
+                    borderTop:0
+                });
+            });
+        </script>
+    }
+}

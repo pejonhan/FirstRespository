@@ -1,0 +1,16 @@
+﻿################################################################################
+# 此 .gitignore 文件已由 Microsoft(R) Visual Studio 自动创建。
+################################################################################
+
+/.vs
+/App.Core
+*.dll
+*.pdb
+*.xml
+/App.Web/bin/roslyn
+/App.Web/obj/Debug
+/App.Web/Web.config
+/App.WebApi/obj/Debug
+/packages
+/App.WebApi/bin/roslyn
+/App.WebApi/bin

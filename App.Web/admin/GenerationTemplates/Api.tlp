@@ -1,0 +1,83 @@
+﻿using App.Core.Domain;
+using App.Core.Domain.BaseObject;
+using App.Core.Dtos;
+using App.Core.Helpers;
+using App.Services;
+using App.WebApi.Apis;
+using App.WebApi.ViewModels;
+using System;
+using System.Threading.Tasks;
+using System.Web.Http;
+
+namespace App.Web.Apis
+{
+    public partial class ${model.ModelName}Controller : BaseController
+    {
+        public ICommonService _CommonService;
+        public I${model.ModelName}Service _${model.ModelName}Service;
+        public ${model.ModelName}Controller(ICommonService CommonService,I${model.ModelName}Service ${model.ModelName}Service)
+        {
+            _CommonService = CommonService;
+            _${model.ModelName}Service = ${model.ModelName}Service;
+        }
+
+        [Route("api/${model.ModelName}s")]
+        public GridResult Get${model.ModelName}s(int page, int rows, string sort = "CreationTime", string order = "asc", Guid? teamId = null, string filterRules = "")
+        {
+            int total;
+            var where = "";
+
+            var query = _CommonService.GetPageRecords<${model.ModelName}>(where, page, rows, sort, order, out total,
+                filterRules);
+
+            return new GridResult { total = total, rows = query };
+        }
+
+		#if($model.UISaveType == "inline")
+        [HttpPost]
+        [Route("api/${model.ModelName}s")]
+        public async Task<IHttpActionResult> Post${model.ModelName}s(BulkDto<${model.ModelName}Dto> dto)
+        {
+            var result = await _${model.ModelName}Service.Save${model.ModelName}s(dto);
+
+            return Ok(result);
+        }
+		#else
+        [HttpPut]
+        [Route("api/${model.ModelName}s/{id}")]
+        public async Task<IHttpActionResult> Put${model.ModelName}(Guid id, ${model.ModelName}Dto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var result = await _${model.ModelName}Service.Update${model.ModelName}(id, dto);
+
+            return Ok(result);
+        }
+
+        [HttpPost]
+        [Route("api/${model.ModelName}s")]
+        public async Task<IHttpActionResult> Post${model.ModelName}(${model.ModelName}Dto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var result = await _${model.ModelName}Service.Create${model.ModelName}(dto);
+
+            return Ok(result);
+        }
+		#end
+        [HttpDelete]
+        [Route("api/${model.ModelName}s")]
+        public async Task<IHttpActionResult> Delete${model.ModelName}(DeleteViewModel model)
+        {
+            await LogicDeleteHelper.Delete("${model.ModelDescription}", "${model.ModelName}", model.Id, model.Remark);
+
+            return Ok(new OperationResult { success = true });
+        }
+    }
+}

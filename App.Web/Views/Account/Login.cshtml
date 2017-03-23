@@ -1,0 +1,94 @@
+﻿@model App.Web.ViewModels.LoginViewModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>请登录！</title>
+    <link href="//cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="//cdn.bootcss.com/animate.css/3.5.2/animate.min.css" rel="stylesheet" type="text/css" />
+    <link href="~/Content/css/app.css" rel="stylesheet" type="text/css" />
+    <link href="~/libs/iCheck/square/blue.css" rel="stylesheet" type="text/css" />
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body class="hold-transition login-page">
+    <div class="login-box">
+        <div class="login-logo">
+            <a href="/">@GetConfig("system.appname")</a>
+        </div>
+        <!-- /.login-logo -->
+        <div class="login-box-body">
+            <p class="login-box-msg">
+            @if (Request["success"] != null)
+            {
+                <label>请用您的手机号和验证码登录本站。</label>
+            }
+            else
+            {
+                <label>请登录进入您的帐户。</label>
+            }</p>
+
+            @using (Html.BeginForm(new { ReturnUrl = ViewBag.ReturnUrl }))
+            {
+                @Html.AntiForgeryToken()
+                @Html.ValidationSummary(true)
+                <div class="form-group has-feedback">
+                    @Html.TextBoxFor(m => m.UserName, new { @class = "form-control uname", @placeholder = "手机号", @required = "" })
+                    @Html.ValidationMessageFor(m => m.UserName)
+                    <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
+                </div>
+                <div class="form-group has-feedback">
+                    @Html.PasswordFor(m => m.Password, new { @class = "form-control pword", @placeholder = "密码", @required = "" })
+                    @Html.ValidationMessageFor(m => m.Password)
+                    <span class="glyphicon glyphicon-lock form-control-feedback"></span>
+                </div>
+                <div class="row">
+                    <div class="col-xs-8">
+                        <div class="checkbox icheck">
+                            <label>
+                                @Html.CheckBoxFor(m => m.RememberMe)@Html.LabelFor(m => m.RememberMe)
+                            </label>
+                        </div>
+                    </div>
+                    <!-- /.col -->
+                    <div class="col-xs-4">
+                        <button class="btn btn-primary btn-block btn-flat" type="submit">确 认</button>
+                    </div>
+                    <!-- /.col -->
+                </div>
+            }
+
+            <a href="/account/register">注册 或 忘记密码？</a><br>
+
+        </div>
+        <!-- /.login-box-body -->
+    </div>
+    <!-- /.login-box -->
+    <!-- jQuery 2.2.3 -->
+    <script src="/scripts/jquery-2.1.4.min.js"></script>
+    <!-- Bootstrap 3.3.6 -->
+    <script src="/scripts/bootstrap.min.js"></script>
+    <!-- iCheck -->
+    <script src="/libs/iCheck/icheck.min.js"></script>
+    <script>
+      $(function () {
+        $('input').iCheck({
+          checkboxClass: 'icheckbox_square-blue',
+          radioClass: 'iradio_square-blue',
+          increaseArea: '20%' // optional
+        });
+      });
+    </script>
+</body>
+</html>
+
+

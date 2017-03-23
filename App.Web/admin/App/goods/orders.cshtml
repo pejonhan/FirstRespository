@@ -1,0 +1,141 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+</head>
+<body>
+    <div class="easyui-layout animated fadeInRight" data-options="fit:true">
+        <div data-options="region:'center',border:false">
+            <table id="dg-Orders"></table>
+        </div>
+    </div>dialog
+		<div id="dlg-Order" style="width:520px;padding:5px;">
+        <form class="easyui-form" data-options="novalidate:true">
+            <table cellpadding="5">
+				                <tr>
+                    <td>OrderSN:</td>
+                    <td colspan="3"><input class="easyui-textbox" type="text" name="OrderSN" data-options="required:true" /></td>
+                </tr>
+				                <tr>
+                    <td>Amount:</td>
+                    <td colspan="3"><input class="easyui-textbox" type="text" name="Amount" data-options="required:true" /></td>
+                </tr>
+				                <tr>
+                    <td>Consignee:</td>
+                    <td colspan="3"><input class="easyui-textbox" type="text" name="Consignee" data-options="required:true" /></td>
+                </tr>
+				                <tr>
+                    <td>ConsigneePhone:</td>
+                    <td colspan="3"><input class="easyui-textbox" type="text" name="ConsigneePhone" data-options="required:true" /></td>
+                </tr>
+				                <tr>
+                    <td>ConsigneeSex:</td>
+                    <td colspan="3"><input class="easyui-textbox" type="text" name="ConsigneeSex" data-options="required:true" /></td>
+                </tr>
+				                <tr>
+                    <td>ConsigneeEmail:</td>
+                    <td colspan="3"><input class="easyui-textbox" type="text" name="ConsigneeEmail" data-options="required:true" /></td>
+                </tr>
+				                <tr>
+                    <td>ConsigneeProvince:</td>
+                    <td colspan="3"><input class="easyui-textbox" type="text" name="ConsigneeProvince" data-options="required:true" /></td>
+                </tr>
+				                <tr>
+                    <td>ConsigneeCity:</td>
+                    <td colspan="3"><input class="easyui-textbox" type="text" name="ConsigneeCity" data-options="required:true" /></td>
+                </tr>
+				                <tr>
+                    <td>ConsigneeDistrict:</td>
+                    <td colspan="3"><input class="easyui-textbox" type="text" name="ConsigneeDistrict" data-options="required:true" /></td>
+                </tr>
+				                <tr>
+                    <td>ConsigneeAddress:</td>
+                    <td colspan="3"><input class="easyui-textbox" type="text" name="ConsigneeAddress" data-options="required:true" /></td>
+                </tr>
+				            </table>
+        </form>
+    </div>
+	<script type="text/javascript">
+        $(function () {
+            var
+                dg = $('#dg-Orders'),
+                dlg = $('#dlg-Order');
+
+            dg.dialogDataGrid({
+                url: '/api/Orders',
+                dialogTitle: '订单',
+                dialogEl: dlg,
+                deleteField: 'OrderSN',
+                columns: [jQuery.merge([
+                    { field: 'ck', checkbox: true },
+                    { field: 'id', hidden: true },
+                    { field: 'OrderSN', title: '订单号', width: 120, sortable: true },
+                    { field: 'Amount', title: '订单金额', width: 80, sortable: true },
+                    { field: 'OrderStatus', title: '状态', width: 80, sortable: true, formatter: globalFormatters.orderStatus },
+                    { field: 'Mobile', title: '订货手机', width: 120, sortable: true },
+                    { field: 'RedeemCodes', title: '兑换码', width: 120, sortable: true },
+                    { field: 'Consignee', title: '收货人', width: 100, sortable: true },
+                    { field: 'ConsigneeSex', title: '性别', width: 60, sortable: true },
+                   	{ field: 'ConsigneePhone', title: '联系电话', width: 120, sortable: true },
+                    //{ field: 'ConsigneeEmail', title: '邮箱', width: 120, sortable: true },
+                    { field: 'ConsigneeProvince', title: '省', width: 80, sortable: true },
+                    { field: 'ConsigneeCity', title: '市', width: 80, sortable: true },
+                    { field: 'ConsigneeDistrict', title: '区/县', width: 80, sortable: true },
+                    { field: 'ConsigneeAddress', title: '地址', width: 220, sortable: true },
+                    { field: 'TrackingNumber', title: '运单号', width: 120, sortable: true }
+                ], globalColumns)],
+                columnFilters: $.merge([globalFilters.numeric('Amount'), globalFilters.combo('OrderStatus', dg)], globalColumnsFilter),
+                delivery: function () {
+                    var record = dg.datagrid('getSelected');
+                    if (record == null) {
+                        showToast('请选择要发货的订单');
+                        return;
+                    }
+
+                    $.messager.prompt('发货', '请输入运单号：', function (r) {
+                        if (r) {
+                            $.post('/api/setOrderStatus/' + record.Id, {
+                                trackingNumber: r,
+                                orderStatus: 1
+                            }, function (data) {
+                                dg.datagrid('reload');
+                            });
+                        }
+                    });
+                },
+                cancel: function () {
+                    var record = dg.treegrid('getSelected');
+                    if (record == null) {
+                        showToast('请选择需要取消的订单');
+                        return false;
+                    }
+
+                    $.messager.confirm('Confirm', '确定要将选中的订单状态设置为已取消吗？', function (r) {
+                        if (r) {
+                            $.post('/api/setOrderStatus/' + record.Id, {
+                                orderStatus: 2
+                            }, function (data) {
+                                dg.datagrid('reload');
+                            });
+                        }
+                    });
+                },
+                exportAll: function () {
+                    window.open('/Export/Orders?type=all', '_blank');
+                },
+                export: function () {
+                    window.open('/Export/Orders', '_blank');
+                },
+                dialogBeforeOpen: function (form, record) {
+                    if (record) {
+                        form.form('load', record);
+                    }
+                    else {
+                        form.form('reset');
+                    }
+                }
+            });
+        });
+    </script>
+		</body>
+</html>

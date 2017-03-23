@@ -1,0 +1,120 @@
+﻿@model App.Core.Domain.Address
+
+@{
+    ViewBag.Title = "修改收货地址";
+}
+
+<div class="content-md margin-bottom-30">
+    <div class="container">
+
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="form-horizontal">
+                <h4>修改收货地址</h4>
+                <hr />
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                <div class="form-group">
+                    <label class="control-label col-md-2" for="ConsigneePhone">联系人</label>
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.Consignee, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.Consignee, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-md-2" for="ConsigneePhone">联系电话</label>
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.ConsigneePhone, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.ConsigneePhone, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-md-2" for="ConsigneePhone">性别</label>
+                    <div class="col-md-10">
+                        <select name="ConsigneeSex" class="form-control required" tabindex="2">
+                            <option @(Model.ConsigneeSex == "先生" ? "selected" : "")>先生</option>
+                            <option @(Model.ConsigneeSex == "女士" ? "selected" : "")>女士</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-md-2" for="ConsigneePhone">邮箱</label>
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.ConsigneeEmail, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.ConsigneeEmail, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-md-2" for="ConsigneePhone">城市</label>
+                    <div class="col-md-10">
+                        <div class="row" id="distpicker">
+                            <div class="col-sm-4">
+                                <select name="ConsigneeProvince" class="form-control required" data-province="@Model.ConsigneeProvince"></select>
+                            </div>
+                            <div class="col-sm-4">
+                                <select name="ConsigneeCity" class="form-control required" data-city="@Model.ConsigneeCity"></select>
+                            </div>
+                            <div class="col-sm-4">
+                                <select name="ConsigneeDistrict" class="form-control required" data-district="@Model.ConsigneeDistrict"></select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-md-2" for="ConsigneePhone">详细地址</label>
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.ConsigneeAddress, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.ConsigneeAddress, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-offset-2 col-md-10">
+                        <input type="submit" value="保存" class="btn btn-default" /> @Html.ActionLink("返回列表", "Index")
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+@section Scripts{
+    <script src="~/libs/distpicker/distpicker.data.js"></script>
+    <script src="~/libs/distpicker/distpicker.js"></script>
+    <script src="~/assets/plugins/sky-forms-pro/skyforms/js/jquery.validate.min.js"></script>
+    <script>
+    jQuery(document).ready(function () {
+        $('#distpicker').distpicker();
+
+        var form = $('form');
+
+        form.ajaxForm({
+            beforeSend: function () {
+                if (!form.valid()) return false;
+                blockUI();
+            },
+            success: function (data) {
+                if (data.success) {
+                    swal({
+                        title: "成功！",
+                        text: "收货地址修改成功。",
+                        type: 'success'
+                    }, function () {
+                        location.href = '/addresses/';
+                    });
+                }
+                else {
+                    $.unblockUI();
+                    sweetAlert(data.message, "", "error");
+                }
+            }
+        });
+    });
+    </script>
+}

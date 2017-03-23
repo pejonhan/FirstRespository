@@ -1,0 +1,63 @@
+﻿@model App.Web.ViewModels.OrderViewModel<App.Core.Domain.Order>
+@{
+    ViewBag.Title = "我的订单";
+    ViewBag.TheNav = ViewBag.Title;
+}
+<div class="content-md margin-bottom-30">
+    <div class="container">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">订单管理</h3>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>订单号</th>
+                            <th>金额</th>
+                            <th>兑换码</th>
+                            <th>收货人</th>
+                            <th>联系电话</th>
+                            <th>收货地址</th>
+                            <th>运单号</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr>
+                                <th scope="row">@(Model.Items.IndexOf(item)+1)</th>
+                                <td>
+                                @if (item.OrderStatus == 2)
+                                {
+                                    <del>@item.OrderSN</del>
+                                    <span class="label label-default">@Model.OrderStatus.Where(s => s.Value == item.OrderStatus).Select(s => s.Key).FirstOrDefault()</span>
+                                }
+                                else
+                                {
+                                    @item.OrderSN
+                                    <span class="label label-info">@Model.OrderStatus.Where(s => s.Value == item.OrderStatus).Select(s => s.Key).FirstOrDefault()</span>
+                                }
+                                </td>
+                                <td>@item.Amount</td>
+                                <td>@item.RedeemCodes</td>
+                                <td>@item.Consignee</td>
+                                <td>@item.ConsigneePhone</td>
+                                <td>@item.ConsigneeCity@item.ConsigneeDistrict@item.ConsigneeAddress</td>
+                                <td>@(string.IsNullOrEmpty(item.TrackingNumber) ? "未填写" : item.TrackingNumber)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        @Html.Partial("_Pager",Model.Pager)
+        @if (Model.Items.Count == 0)
+        {
+            <p class="text-center">您还没有任何订单！</p>
+        }
+    </div>
+</div>
+        
+

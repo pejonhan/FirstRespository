@@ -1,0 +1,64 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title></title>
+</head>
+<body>
+    <div class="easyui-layout" data-options="fit:true">
+        <div data-options="region:'center',border:0" style="padding:5px;">
+            <table cellpadding="5" style="width:100%;">
+                <tr>
+                    <th>订单号:</th>
+                    <td>{{record.OrderSN}}</td>
+                    <th>订单金额:</th>
+                    <td>{{record.Amount}}</td>
+                </tr>
+                <tr>
+                    <th>订货手机:</th>
+                    <td>{{record.Mobile}}</td>
+                    <th>兑换码:</th>
+                    <td>{{record.RedeemCodes}}</td>
+                </tr>
+                <tr>
+                    <th>收货人:</th>
+                    <td>{{record.Consignee}}</td>
+                    <th>性别:</th>
+                    <td>{{record.ConsigneeSex}}</td>
+                </tr>
+                <tr>
+                    <th>联系电话:</th>
+                    <td colspan="3">{{record.ConsigneePhone}}</td>
+                </tr>
+                <tr>
+                    <th>联系地址:</th>
+                    <td>{{record.ConsigneeProvince}}{{record.ConsigneeCity}}{{record.ConsigneeDistrict}}{{record.ConsigneeAddress}}</td>
+                </tr>
+                <tr>
+                    <th>运单号:</th>
+                    <td colspan="3">{{record.TrackingNumber}}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <script type="text/javascript">
+        $(function () {
+            var dg = $('#dg-order-detail'),
+                record = $('#dlg-dialog').data('record');
+
+            var vm = new Vue({
+                el:'body',
+                data: {
+                    record: {}
+                },
+                ready: function () {
+                    $.post('/api/GetOrder/' + record, function (data) {
+                        vm.$set('record', data);
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

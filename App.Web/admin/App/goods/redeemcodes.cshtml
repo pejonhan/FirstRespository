@@ -1,0 +1,111 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+</head>
+<body>
+    <div class="easyui-layout animated fadeInRight" data-options="fit:true">
+        <div data-options="region:'west',border:false" title="选择套餐" style="width: 260px; border-right: 1px #efefef solid;">
+            <div id="dl-goodspackages">
+            </div>
+        </div>
+        <div data-options="region:'center',border:false" title="兑换码列表">
+            <table id="dg-RedeemCodes"></table>
+        </div>
+    </div>
+    <script type="text/javascript">
+        loadResources({
+            id: 'js-datagrid-groupview',
+            src: 'Resources/datagrid-groupview.js'
+        });
+
+        $(function () {
+            var dl = $('#dl-goodspackages'),
+                dg = $('#dg-RedeemCodes'),
+                packageId = '';
+
+            dl.datalist({
+                url: '/api/GetAllGoodsPackages',
+                method: 'get',
+                border: 0,
+                fit: true,
+                rownumbers: true,
+                onSelect: function (index, row) {
+                    packageId = row.id;
+                    $('#dg-RedeemCodes').parent().prev().find('a').linkbutton(packageId == '' ? 'disable' : 'enable');
+                    dg.datagrid('load', {
+                        packageId: row.id
+                    });
+                }
+            });
+
+            dg.dialogDataGrid({
+                url: '/api/RedeemCodes',
+                fit: true,
+                border:0,
+                pagination: true,
+                singleSelect:true,
+                rownumbers: true,
+                enableRowFilter:false,
+                method: 'get',
+                mode: 'remote',
+                columns: [[
+                    { field: 'Id', hidden: true },
+                    { field: 'CodeNumber', title: '兑换码', width: 220 },
+                    { field: 'IsExchange', title: '已兑换', width: 80 },
+                    { field: 'ExchangeTime', title: '兑换日期', width: 130 },
+                    { field: 'UserName', title: '兑换人', width: 120 },
+                    {
+                        field: 'OrderSN', title: '相关订单', width: 120, formatter: function (value) {
+                            if (value == '') return '';
+                            return '<a href="javascript:dialog(\'订单详情：' + value + '\',\'goods/orderdetail\',\'' + value + '\',600,230);">' + value + '</a>';
+                        }
+                    },
+                    { field: 'CreationTime', title: '生成日期', width: 130 }
+                ]],
+                view: groupview,
+                groupField: 'PackageName',
+                groupFormatter: function (value, rows) {
+                    return value + ' - 共' + rows[0].TotalRedeemCode + '条兑换码';
+                },
+                build: function () {
+                    $.messager.prompt('生成兑换码', '请输入要生成的数量：', function (r) {
+                        if (parseInt(r)) {
+                            showLoadding();
+                            $.post('/api/RedeemCodes/' + packageId, {
+                                createNumber: r
+                            }, function (data) {
+                                if (data.success) {
+                                    dg.datagrid('load', {
+                                        packageId: packageId
+                                    });
+                                }
+                                else {
+                                    $.messager.alert('注意！',data.message);
+                                }
+                            });
+                        }
+                    });
+                },
+                empty: function () {
+                    $.messager.confirm('Confirm', '清空的数据无法恢复，确定继续吗？', function (r) {
+                        if (r) {
+                            showLoadding();
+                            $.post('/api/EmptyRedeemCodes/' + packageId, function () {
+                                dg.datagrid('load', {
+                                    packageId: packageId
+                                });
+                            });
+                        }
+                    });
+                },
+                export: function () {
+                    window.open('/Export/RedeemCodes/' + packageId, '_blank');
+                }
+            });
+
+            $('#dg-RedeemCodes').parent().prev().find('a').linkbutton('disable');
+        });
+    </script>
+</body>
+</html>

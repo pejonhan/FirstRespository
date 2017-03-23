@@ -1,0 +1,93 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+	<meta charset="utf-8" />
+</head>
+<body>
+    <div class="easyui-layout animated fadeInRight" data-options="fit:true">
+        <div data-options="region:'west',border:false,collapsible:false" title="选择模型" style="width:420px; border-right: 1px #EFEFEF solid;">
+            <table id="dg-models"></table>
+        </div>
+        <div data-options="region:'center',border:false" title="生成窗口">
+            <div class="easyui-layout" data-options="fit:true,border:0">
+                <div data-options="region:'north',border:0">
+                    <div id="generation-options" class="datagrid-toolbar">
+                        <table cellspacing="0" cellpadding="0">
+                            <tr>
+                                <td>
+                                    <a href="javascript:void(0)" class="l-btn l-btn-small l-btn-plain" id="btnCodeGeneration"><span class="l-btn-left"><span class="l-btn-text"><i class="fa fa-save"></i> 生成</span></span></a>
+                                </td>
+                                <td> | </td>
+                                <td><input type="checkbox" checked="checked" value="Dto" data-output-path="\App.Core\Dtos\{0}\{1}Dto.generation.cs" />Dto</td>
+                                <td><input type="checkbox" checked="checked" value="IService" data-output-path="\App.Core\Services\{0}\I{1}Service.generation.cs" />IService</td>
+                                <td><input type="checkbox" checked="checked" value="ServiceImpl" data-output-path="\App.Core\Services\{0}\{1}ServiceImpl.generation.cs" />ServiceImpl</td>
+                                <td><input type="checkbox" checked="checked" value="Api" data-output-path="\App.WebApi\Controllers\{0}\{1}Controller.generation.cs" />Api</td>
+                                <td><input type="checkbox" value="Html" data-output-path="\App.Web\admin\App\{0}\{1}s.generation.cshtml" />cshtml</td>
+                            </tr>
+                        </table></div>
+                </div>
+                <div id="GenerationLog" data-options="region:'center',border:0" style=" padding:10px; line-height:20px;">
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        $(function () {
+            var dg = $('#dg-models'),
+                generationLog= $('#GenerationLog'),
+                generationIndex = 0;
+
+            $('#btnCodeGeneration').click(function () {
+                generationLog.empty();
+                generationIndex = 0;
+
+                var selecteds = dg.datagrid('getSelections');
+                if (selecteds.length === 0) {
+                    showToast('请选择模型！');
+                    return false;
+                }
+
+                var gens = [];
+                var options = [];
+                $.each($('#generation-options :checkbox'),function(i,n){
+                    if ($(n).prop('checked')) {
+                        $.each(selecteds, function (j, model) {
+                            gens.push({ model: model, option: $(n).val(),outputPath:$(n).attr('data-output-path') });
+                        });
+                    }
+                });
+
+                sendGeneration(gens[0]);
+
+                function sendGeneration(gen) {
+                    generationLog.append('<div>正在生成模型 '+ gen.model.ModelName +'('+ gen.option +')...</div>');
+                    $.post('/api/Models', gen, function (data) {
+                        if (data.success) {
+                            generationIndex++;
+                            generationLog.append('<div>模型 ' + gen.model.ModelName + '(' + gen.option + ')生成成功</div>');
+                            generationLog.append('<div>' + data.message + '</div>');
+                            if (generationIndex < gens.length) sendGeneration(gens[generationIndex]);
+                        }
+                    });
+                }
+                return this;
+            });
+
+            dg.inlineGrid({
+                url: '/api/Models',
+                columns: [[
+                    { field: 'ck', checkbox: true },
+                    { field: 'Id', hidden: true },
+                    { field: 'ModelName', title: '模型名称', width: 120 },
+                    { field: 'ModelDescription', title: '描述', width: 100, editor: 'textbox', sortable: true },
+                    { field: 'ExistField', title: 'Exist判断', width: 120 },
+                ]],
+                pagination:false
+            });
+        });
+    </script>
+</body>
+</html>

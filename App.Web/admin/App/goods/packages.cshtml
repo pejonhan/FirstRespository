@@ -1,0 +1,245 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+</head>
+<body>
+    <div class="easyui-layout animated fadeInRight" data-options="fit:true">
+        <div data-options="region:'west',border:false" style="width: 40%; border-right: 1px #efefef solid;">
+            <table id="dg-GoodsPackages"></table>
+        </div>
+        <div data-options="region:'center',border:false">
+            <div class="easyui-layout animated fadeInRight" data-options="fit:true">
+                <div data-options="region:'north',border:false" style="height: 444px; border-right: 1px #efefef solid; background:#fff;">
+                    <div class="datagrid-toolbar">
+                        <table cellspacing="0" cellpadding="0">
+                            <tbody>
+                                <tr>
+                                    <td><a href="javascript:void(0)" class="l-btn l-btn-small l-btn-plain" id="btnSaveRoleButtons"><span class="l-btn-left"><span class="l-btn-text"><i class="fa fa-save"></i> 保存套餐内容</span></span></a></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                        <textarea id="PackageContent" name="Description" style="width:auto;"></textarea>
+                    </div>
+                </div>
+                <div data-options="region:'center',border:false">
+                    <table id="dg-PackageGoods"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="dlg-linkgoods" style="width:600px;padding:5px;">
+        <form class="easyui-form" method="post" data-options="novalidate:true">
+            <table cellpadding="5" style="width:100%">
+                <tr>
+                    <td>选择商品:</td>
+                    <td>
+                        <select name="GoodsId" style="width:100%"></select>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+	<script type="text/javascript">
+        loadResources({
+            id: 'js-ckeditor',
+            src: '/libs/ckeditor/ckeditor.js'
+        });
+
+        $(function() {
+            var dg = $('#dg-GoodsPackages'),
+                dgGoods = $('#dg-PackageGoods'),
+                dlg = $('#dlg-linkgoods'),
+                form = dlg.find('form'),
+                combogoods = form.find('select[name="GoodsId"]'),
+                selectPackageIndex = 0;
+
+            CKEDITOR.replace('PackageContent', {
+                height: '300px',
+                border:0
+            });
+
+            $('#btnSaveRoleButtons').click(function () {
+                var record = dg.datagrid('getSelected');
+                if (record == null) {
+                    showToast(lang.editPleaseSelected);
+                    return;
+                }
+
+                for (instance in CKEDITOR.instances) {
+                    CKEDITOR.instances[instance].updateElement();
+                }
+
+                $.post('/api/SavePackageDescription/' + record['Id'], {
+                    Description: $('#PackageContent').val()
+                }, function (data) {
+                    if (data.success) {
+                        showToast('套餐内容更新成功');
+                        dg.datagrid('reload');
+                    }
+                })
+            });
+
+            combogoods.combogrid({
+                height:45,
+                panelWidth: 500,
+                required: true,
+                multiple: true,
+                multiline:true,
+                pagination: true,
+                //mode: 'remote',
+                idField: 'Id',
+                textField: 'GoodsName',
+                url: '/api/Goods',
+                method: 'get',
+                columns: [[
+                    { field: 'Id', hidden: true },
+                    { field: 'GoodsName', title: '商品名称', width: 220 },
+                    { field: 'Price', title: '价格', width: 80 }
+                ]],
+                fitColumns: true
+            });
+
+            dg.inlineGrid({
+                pagination: false,
+                singleSelect:true,
+                url: '/api/GoodsPackages',
+                columns: [jQuery.merge([
+                    { field: 'Id', hidden: true }
+					, {
+					    field: 'PackageName', title: '套餐名称', width: 200, editor: { type: 'textbox', options: { required: true } }, sortable: true
+					}
+					, { field: 'Price', title: '套餐价格', width: 80, editor: { type: 'textbox', options: { required: true } }, sortable: true }
+                    , { field: 'CustomRedeemCode', title: '自定义代码', editor: { type: 'textbox', options: { required: true } } }
+                    , { field:'TotalRedeemCode', title:'兑换码数量', width:100}
+                    //, {
+                    //    field: 'Photo',
+                    //    title: '图片',
+                    //    width: 160,
+                    //    editor: {
+                    //        type: 'textbox',
+                    //        options: {
+                    //            required: true,
+                    //            editable: false,
+                    //            iconWidth: 22,
+                    //            buttonText: '<i class="fa fa-th-large"></i>',
+                    //            onClickButton: chooseImage
+                    //        }
+                    //    },
+                    //    formatter: function (val, row) {
+                    //        if (val == '') return '';
+                    //        return '<a href="' + val + '" target="_balnk">' + val + '</a>';
+                    //    }
+                    //}
+					//, { field: 'Description', title: '描述', width: 200, editor: { type: 'textbox' } }
+                ], globalColumns)],
+                columnFilters: $.merge([globalFilters.numeric('Price'), globalFilters.numeric('TotalRedeemCode')], globalColumnsFilter),
+                onLoadSuccess: function () {
+                    dg.datagrid('selectRow', selectPackageIndex);
+                },
+                onSelect: function (index, row) {
+                    if (!row) return;
+
+                    for (instance in CKEDITOR.instances) {
+                        CKEDITOR.instances[instance].setData(row['Description']);
+                    }
+
+                    selectPackageIndex = index;
+                    dgGoods.datagrid({
+                        rownumbers: true,
+                        fit: true,
+                        border: 0,
+                        loadMsg: '',
+                        height: 'auto',
+                        data: row.Goods,
+                        toolbar: [{
+                            text: '关联商品',
+                            iconCls:'fa fa-link',
+                            handler: function () {
+                                linkGoods();
+                            }
+                        }, {
+                            text: '删除关联商品',
+                            iconCls: 'fa fa-remove',
+                            handler: function () {
+                                var records = dgGoods.datagrid('getSelections');
+                                if (records.length > 0) {
+                                    var models = [];
+                                    $.each(records, function (i, n) {
+                                        models.push({
+                                            Id: n['Id']
+                                        });
+                                    });
+                                    $.messager.confirm('Confirm', lang.deleteConfirm, function (r) {
+                                        if (r) {
+                                            $.ajax({
+                                                method: 'DELETE',
+                                                url: '/api/RemoveLinkPackageGoods/'+row.Id,
+                                                data: {
+                                                    input: JSON.stringify(models)
+                                                }
+                                            }).done(function (data) {
+                                                if (data.success) {
+                                                    showToast(lang.deleteSuccess);
+                                                    dg.datagrid('reload');
+                                                }
+                                            });
+                                        }
+                                    });
+
+                                } else {
+                                    showToast(lang.deletePleaseSelected);
+                                }
+                            }
+                        }],
+                        columns: [[
+                            { field: 'ck', checkbox: true },
+                            { field: 'Id', hidden: true },
+                            { field: 'GoodsName', title: '商品名称', width: 220 },
+                            { field: 'Price', title: '价格', width: 80 }
+                        ]]
+                    });
+                }
+            });
+
+            function linkGoods() {
+                var record = dg.datagrid('getSelected');
+                if (record == null) {
+                    showToast(lang.editPleaseSelected);
+                    return;
+                }
+
+                combogoods.combogrid('clear');
+
+                dlg.dialog({
+                    title: '关联商品',
+                    modal: true,
+                    top: 120,
+                    buttons: [{
+                        text: lang.iconsave,
+                        handler: function () {
+                            var isValidate = form.form('enableValidation').form('validate');
+                            if (!isValidate) return false;
+
+                            form.form('submit', {
+                                url: '/api/PackageGoods/' + record.Id,
+                                success: function (data) {
+                                    dg.datagrid('reload');
+                                    dlg.dialog('close');
+                                }
+                            });
+                        }
+                    }, {
+                        text: lang.iconcancel,
+                        handler: function () {
+                            dlg.dialog('close');
+                        }
+                    }]
+                });
+            }
+        });
+    </script>
+	</body>
+</html>

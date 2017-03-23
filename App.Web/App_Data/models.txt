@@ -1,0 +1,6 @@
+﻿#模块名称,描述,保存目录,列表方式（可选：dialog/inline/tree）,用于判断是否存在的属性名称
+#Goods,商品,Goods,inline
+#GoodsPackage,商品套餐,Goods,inline,PackageName
+Order,订单,Goods,dialog,OrderSN
+Dictionary,字典,System,inline,CategoryKey
+Address,收货地址,Goods,dialog,Consignee

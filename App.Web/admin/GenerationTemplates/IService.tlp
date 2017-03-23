@@ -1,0 +1,46 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Text;
+using System.Threading.Tasks;
+using App.Core.Domain;
+using App.Core.Domain.BaseObject;
+using App.Core.Dtos;
+
+namespace App.Services
+{
+    public partial interface I${model.ModelName}Service
+    {
+		#if($model.UISaveType == "inline")
+		/// <summary>
+        /// 批量保存
+        /// </summary>
+        /// <param name="bulks"></param>
+        /// <returns></returns>
+        Task<OperationResult> Save${model.ModelName}s(BulkDto<${model.ModelName}Dto> dtos);
+		#else
+		/// <summary>
+        /// 创建
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <returns></returns>
+        Task<OperationResult> Create${model.ModelName}(${model.ModelName}Dto dto);
+
+        /// <summary>
+        /// 修改
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="dto"></param>
+        /// <returns></returns>
+        Task<OperationResult> Update${model.ModelName}(Guid id, ${model.ModelName}Dto dto);
+		#end
+
+		/// <summary>
+        /// 异步获取
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        Task<${model.ModelName}> Get${model.ModelName}Async(Guid id);
+    }
+}

@@ -1,0 +1,116 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using App.Core.Domain.BaseObject;
+using App.Core.Dtos;
+using App.Core.Helpers;
+using App.Core;
+using App.Core.DataAccess;
+using System.Data.Entity;
+using App.Core.Domain;
+using Omu.ValueInjecter;
+using System.Linq.Expressions;
+
+namespace App.Services.Impls
+{
+    public partial class ${model.ModelName}ServiceImpl : I${model.ModelName}Service
+    {
+        private readonly CurrentUser _curUser;
+        public ${model.ModelName}ServiceImpl()
+        {
+            _curUser = new CurrentUser();
+        }
+        
+		#if($model.UISaveType == "inline")
+        public async Task<OperationResult> Save${model.ModelName}s(BulkDto<${model.ModelName}Dto> dto)
+        {
+            using (var db = new Db())
+            {
+                var curUser = new CurrentUser();
+                var exists = new List<string>();
+                //批量插入
+                foreach (var row in dto.InsertedRows)
+                {
+					#if(${model.ExistField} != "")
+                    if (await db.${model.ModelName}.CountAsync(b => b.${model.ExistField} == row.${model.ExistField}) > 0)
+                    {
+                        exists.Add(string.Format("名为【{0}】的${model.ModelDescription}已经存在！", row.${model.ExistField}));
+                    }
+                    else
+                    {
+					#end
+                        var entity = new ${model.ModelName}();
+                        entity.InjectFrom<NotNullInjection>(row);
+                        db.${model.ModelName}.Add(entity);
+                    #if(${model.ExistField} != "")}#end
+                }
+                //批量更新
+                foreach (var row in dto.UpdatedRows)
+                {
+                    var entity = await db.${model.ModelName}.FindAsync(row.Id);
+                    entity.InjectFrom(new NotNullInjection(), row);
+                }
+
+                //标记为删除
+                foreach (var row in dto.DeletedRows.Where(row => row.Id != null))
+                {
+                    await LogicDeleteHelper.Delete("${model.ModelDescription}", "${model.ModelName}", row.Id.Value, #if(${model.ExistField} != "")row.${model.ExistField}#end);
+                }
+
+                await db.SaveChangesAsync();
+
+                return new OperationResult() { success = true, message = dto.DeletedRows.Count > 0 ? "数据已经成功删除！" : exists.Count > 0 ? String.Join("<br />", exists) : "保存成功！" };
+            }
+        }
+		#else
+		public async Task<OperationResult> Create${model.ModelName}(${model.ModelName}Dto dto)
+        {
+            using (var db = new Db())
+            {
+				#if(${model.ExistField} != "")
+                if (await db.${model.ModelName}.CountAsync(t => t.${model.ExistField} == dto.${model.ExistField}) > 0)
+                {
+                    return new OperationResult() { success = false, message = string.Format("名为【{0}】的${model.ModelDescription}已经存在！", dto.${FieldExise}) };
+                }
+				#end
+                var entity = new ${model.ModelName}();
+                entity.InjectFrom(dto);
+
+                db.${model.ModelName}.Add(entity);
+                var result = await db.SaveChangesAsync();
+
+                return new OperationResult() { success = result > 0 };
+            }
+        }
+
+		
+        public async Task<OperationResult> Update${model.ModelName}(Guid id, ${model.ModelName}Dto dto)
+        {
+            using (var db = new Db())
+            {
+                var entity = await db.${model.ModelName}.FindAsync(id);
+                if (entity == null)
+                {
+                    return new OperationResult() { success = false, message = string.Format("找不到该记录Id为{0}的记录", id) };
+                }
+
+                entity.InjectFrom(dto);
+
+                var result = await db.SaveChangesAsync();
+
+                return new OperationResult() { success = result > 0 };
+            }
+        }
+		#end
+
+		public async Task<${model.ModelName}> Get${model.ModelName}Async(Guid id)
+        {
+            using (var db = new Db())
+            {
+                return await db.${model.ModelName}.FindAsync(id);
+            }
+        }
+    }
+}
